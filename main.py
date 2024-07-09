@@ -30,7 +30,16 @@ executor = LocalCommandLineCodeExecutor(
     virtual_env_context=venv_context,
 )
 
+message = f"""
+Напиши телеграм-бота на aiogram, который взаимодействуя с Assistant API,
+TTS OpenAI, Whisper принимает голосовые сообщения пользователя, генерирует на них ответ,
+а затем отправляет этот ответ в виде голосового сообщения.
 
+Используй при написании бота: 
+OPENAI_API_KEY={OPENAI_API_KEY},
+TELEGRAM_BOT_TOKEN={TELEGRAM_BOT_TOKEN}
+
+"""
 
 user_proxy = UserProxyAgent(name="user_proxy_and_executor",
                             human_input_mode="NEVER",
@@ -55,7 +64,18 @@ developer = GPTAssistantAgent(
         "config_list": config_list,
         "assistant_id": settings.ASSISTANT_ID,
     },
-    instructions=code_writer_instructions,
+    instructions=f""" Вот начальное условие, по которому ты пишешь код:
+    {message}.
+    При написании кода ты обязательно ориентируешься на следующий материал по
+    aiogram:
+    {data.aiogram_doc}.
+    При написании кода ты обязательно ориентируешься на следующий материал по
+    Работе с аудио в OpenAI API:
+    {data.audio_api_doc}.
+    При написании кода ты обязательно ориентируешься на следующий материал по
+    работе с Assistant API:
+    {data.assistant_api_doc}
+    """,
     assistant_config={
         "tools": [
             {"type": "file_search"},
@@ -68,12 +88,6 @@ developer = GPTAssistantAgent(
     }
 )
 
-message = f"""
-Напиши телеграм-бота на aiogram, который взаимодействуя с Assistant API,
-TTS OpenAI, Whisper принимает голосовые сообщения пользователя, генерирует на них ответ,
-а затем отправляет этот ответ в виде голосового сообщения.
-
-"""
 
 chat = user_proxy.initiate_chat(developer, message=message)
 print(chat)
